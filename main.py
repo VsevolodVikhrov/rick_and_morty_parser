@@ -1,8 +1,8 @@
-import get_data
 import parse_data
 import file_processing
 import os.path
 import handlers
+import dataclasses
 
 
 def check_file_existing():
@@ -41,13 +41,33 @@ def input_command():
         handlers.handle_command(command)
 
 
+@dataclasses.dataclass()
 class Character:
-    def __init__(self, name, status, species, gender, location):
-        self.name = name
-        self.status = status
-        self.species = species
-        self.gender = gender
-        self.location = location
+    name: str
+    status: str
+    species: str
+    gender: str
+    location: str
+
+
+species_registry = {}
+
+
+class SpeciesMeta(type):
+    def __new__(mcs, class_name, superclass, attrs):
+        species_type = attrs.species
+        species_class = (class_name, superclass, attrs)
+        if species_type not in species_registry.keys():
+            species_registry[species_type] = species_class
+        return species_class
+
+
+class Human(Character, metaclass=SpeciesMeta):
+    type = "Human"
+
+
+class Alien(Character, metaclass=SpeciesMeta):
+    type = "Alien"
 
 
 class Aggregator:
