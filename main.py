@@ -24,14 +24,24 @@ def init_characters():
     data = load_backuped_or_get_data()
     list_of_characters = []
     for i in data:
-        character = Character(
-            name=i["name"],
-            status=i["status"],
-            species=i["species"],
-            gender=i["gender"],
-            location=i["location"]
-        )
-        list_of_characters.append(character)
+        if i["species"] == "Human":
+            special_character = Human(
+                name=i["name"],
+                status=i["status"],
+                species=i["species"],
+                gender=i["gender"],
+                location=i["location"]
+            )
+        else:
+            special_character = Alien(
+                name=i["name"],
+                status=i["status"],
+                species=i["species"],
+                gender=i["gender"],
+                location=i["location"]
+            )
+        list_of_characters.append(special_character)
+        print(special_character) # Почему в листе отображаются такие странные значения объектов класса?
     return list_of_characters
 
 
@@ -55,10 +65,10 @@ species_registry = {}
 
 class SpeciesMeta(type):
     def __new__(mcs, class_name, superclass, attrs):
-        species_type = attrs.species
-        species_class = (class_name, superclass, attrs)
+        species_type = class_name
+        species_class = type(class_name, superclass, attrs)
         if species_type not in species_registry.keys():
-            species_registry[species_type] = species_class
+            species_registry.update({species_type: species_class})
         return species_class
 
 
@@ -76,33 +86,40 @@ class Aggregator:
     unknown = 0
     locations = 0
     human = 0
+    alien = 0
 
     def show_alive(self):
         for i in self.data:
             if i.status == "Alive":
                 self.alive += 1
+        return self.alive
 
     def show_unknown(self):
         for i in self.data:
             if i.status == "unknown":
                 self.unknown += 1
+        return self.unknown
 
     def show_human_species(self):
         for i in self.data:
             if i.species == "Human":
                 self.human += 1
+        return self.human
+
+    def show_alien_species(self):
+        for i in self.data:
+            if i.species == "Alien":
+                self.alien += 1
+        return self.alien
 
     def show_locations(self):
-        locations = {}
-        list_of_locations = []
+        location_count = {}
         for i in self.data:
-            list_of_locations.append(i.location)
-        for i in list_of_locations:
-            if i not in locations:
-                locations.update({i: 1})
-            else:
-                locations[i] = locations[i] + 1
-        self.locations = locations
+            if i.location not in location_count:
+                location_count[i.location] = 0
+            location_count[i.location] += 1
+        self.locations = location_count
+        return self.locations
 
 
 if __name__ == '__main__':
